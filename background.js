@@ -68,6 +68,5 @@ async function askAI(inputElements) {
         For the form fields listed above, please generate suggested values in JSON format.
         If any field does not have a matching value in the user's info, leave it empty. Do NOT fill with fake data and do not fill data with the value in placeholder.`;
     const suggestedValues = await languageModel.prompt(formContext + autoFillPrompt);
-
     console.log(suggestedValues);
 }
