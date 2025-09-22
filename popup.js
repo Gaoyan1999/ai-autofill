@@ -10,6 +10,10 @@ document.getElementById('autofillBtn').addEventListener('click', async () => {
         console.log("No result");
     }
     const labelElements = result[0].result;
+    const response = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({ type: "autoFillForm", data: labelElements }, resolve);
+    });
+    console.log("Response from background:", response);
 });
 
 document.getElementById('openOptions').addEventListener('click', () => {
@@ -47,7 +51,7 @@ function autoFillForm() {
         console.log(inputElements);
         const extracted = inputElements.map(extractInputInfo);
         return extracted;
-        
+
         // TODO: auto fill select    
         // find all the select elements in the form
         // const selectElements = targetForm.querySelectorAll("select");
