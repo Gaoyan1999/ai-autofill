@@ -10,10 +10,9 @@ document.getElementById('autofillBtn').addEventListener('click', async () => {
         console.log("No result");
     }
     const labelElements = result[0].result;
-    const response = await new Promise((resolve) => {
-        chrome.runtime.sendMessage({ type: "autoFillForm", data: labelElements }, resolve);
+    chrome.runtime.sendMessage({ type: "autoFillForm", data: labelElements }, (data)=>{
+    console.log('receive data',data);
     });
-    console.log("Response from background:", response);
 });
 
 document.getElementById('openOptions').addEventListener('click', () => {

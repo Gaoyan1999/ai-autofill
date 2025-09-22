@@ -2,7 +2,6 @@
 console.log("Background service worker started.");
 let languageModel;
 /**
-  
   type: autoFillForm
   data: inputElements
    type InputElement {
@@ -15,20 +14,27 @@ let languageModel;
     }
  */
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log("Message received in background:", message);
     if (!message.type) {
         sendResponse({ status: "error", reason: "No type specified" });
-        return;
+        return false;
     }
     switch (message.type) {
         case "autoFillForm":
             const inputElements = message.data;
-            askAI(inputElements);
-            break;
+            (async () => {
+                try {
+                    const suggestedValues = await askAI(inputElements);
+                    sendResponse({ status: "ok", values: suggestedValues });
+                } catch (err) {
+                    sendResponse({ status: "error", reason: err.message });
+                }
+            })();
+            return true;
         default:
             sendResponse({ status: "error", reason: "Unknown type" });
+            return false;
     }
-});
+});;
 
 
 
@@ -58,15 +64,29 @@ async function askAI(inputElements) {
         return `${idx + 1}. Field Info:\n${textLines}`;
     }).join("\n\n");
 
-    console.log(formContext);
     const autoFillPrompt = `
         You are a helpful AI assistant. The user has provided their personal info:
         - Name: Daniel Li
         - Email: daniel.li@example.com
         - Country: Australia
         - Likes newsletter: yes
-        For the form fields listed above, please generate suggested values in JSON format.
-        If any field does not have a matching value in the user's info, leave it empty. Do NOT fill with fake data and do not fill data with the value in placeholder.`;
-    const suggestedValues = await languageModel.prompt(formContext + autoFillPrompt);
-    console.log(suggestedValues);
+        - Work phone: +61 0402809602
+    \n\n
+    The form fields are listed above. Please return **only a JSON array of strings**, in the same order as the fields, containing suggested values.
+    If the user's info does not provide a value for a field, leave it as an empty string "".
+    Do NOT return any text outside the JSON array.`;
+    console.log(formContext + autoFillPrompt);
+    const aiResponse = await languageModel.prompt(formContext + "\n\n" + autoFillPrompt);
+    console.log('aiReponse:',aiResponse);
+    const resultsArray = handleAiJsonResponse(aiResponse);
+    console.log("processed:",resultsArray);
+    resultsArray.forEach((answer, index) => {
+        inputElements[index].aiAnswer = answer;
+    });
+    return inputElements;
+}
+
+function handleAiJsonResponse(jsonstring) {
+    const match = jsonstring.match(/```json\s*([\s\S]*?)```/i);
+    return JSON.parse(match ? match[1].trim() : jsonstring);
 }
