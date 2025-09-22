@@ -10,9 +10,18 @@ document.getElementById('autofillBtn').addEventListener('click', async () => {
         console.log("No result");
     }
     const labelElements = result[0].result;
-    chrome.runtime.sendMessage({ type: "autoFillForm", data: labelElements }, (data)=>{
-    console.log('receive data',data);
+    chrome.runtime.sendMessage({ type: "autoFillForm", data: labelElements }, (data) => {
+        console.log('receive data', data);
+        if (data.status !== "ok") {
+            return;
+        }
+        chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            func: fillForm,
+            args: [data.values]
+        });
     });
+
 });
 
 document.getElementById('openOptions').addEventListener('click', () => {
@@ -58,6 +67,27 @@ function autoFillForm() {
     } else {
         alert("No form found on this page.");
     }
+}
+
+function fillForm(aiResult) {
+    console.log(aiResult);
+    if (!Array.isArray(aiResult)) {
+        return;
+    }
+
+    aiResult.forEach(el => {
+        let input = document.querySelector(`[name="${el.name}"]`);
+        if (!input && el.id) {
+            input = document.getElementById(el.id);
+        }
+        console.log(input);
+        if (!input) {
+            return;
+        }
+        input.value = el.aiAnswer;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+
 }
 
 
