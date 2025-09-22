@@ -65,18 +65,25 @@ async function askAI(inputElements) {
     }).join("\n\n");
 
     const autoFillPrompt = `
+
         You are a helpful AI assistant. The user has provided their personal info:
         - Name: Daniel Li
         - Email: daniel.li@example.com
         - Country: Australia
         - Likes newsletter: yes
         - Work phone: +61 0402809602
-    \n\n
-    The form fields are listed above. Please return **only a JSON array of strings**, in the same order as the fields, containing suggested values.
-    If the user's info does not provide a value for a field, leave it as an empty string "".
-    Do NOT return any text outside the JSON array.`;
-    console.log(formContext + autoFillPrompt);
-    const aiResponse = await languageModel.prompt(formContext + "\n\n" + autoFillPrompt);
+
+        The form fields are listed below:
+        ${formContext}
+
+        Your task:
+        1. Return **only a JSON array of strings**.
+        2. The array **must have exactly the same length as the number of form fields (the number would be ${inputElements.length}) ** (one value for each field, in the same order).
+        3. If the user's info does not provide a value for a field, output an empty string "" for that position.
+        4. Do **not** add explanations, comments, or any text outside the JSON array.
+`;
+    console.log(autoFillPrompt);
+    const aiResponse = await languageModel.prompt(autoFillPrompt);
     console.log('aiReponse:',aiResponse);
     const resultsArray = handleAiJsonResponse(aiResponse);
     console.log("processed:",resultsArray);
