@@ -21,3 +21,15 @@
     - Works with text inputs, dropdowns, radio/checkboxes, and dynamic forms.
 - **Multi-Account & Cross-Site Management**
     - Distinguishes between work and personal information, allowing one-click switching between different contexts.
+
+
+# How to run
+1. install package and build
+```code
+pnpm i
+pnpm build
+```
+
+2. Then you will get a dist file in root directory
+
+3. Click **Load unpacked** button in chrome://extensions, and upload the dist file
