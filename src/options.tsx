@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import Checkbox from "@mui/material/Checkbox";
 
 interface OptionsData {
+  
   name: string;
   email: string;
 }
