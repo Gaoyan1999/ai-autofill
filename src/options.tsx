@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
+import Checkbox from "@mui/material/Checkbox";
 
 interface OptionsData {
   name: string;
   email: string;
 }
 
+const label = { inputProps: { "aria-label": "Checkbox demo" } };
+
 const Options: React.FC = () => {
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
 
   useEffect(() => {
-    chrome.storage.sync.get(["name", "email"], (result: Partial<OptionsData>) => {
-      if (result.name) setName(result.name);
-      if (result.email) setEmail(result.email);
-    });
+    chrome.storage.sync.get(
+      ["name", "email"],
+      (result: Partial<OptionsData>) => {
+        if (result.name) setName(result.name);
+        if (result.email) setEmail(result.email);
+      }
+    );
   }, []);
 
   const saveOptions = () => {
@@ -25,6 +31,7 @@ const Options: React.FC = () => {
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial" }}>
+      <Checkbox {...label} defaultChecked />
       <h2>Extension Settings</h2>
       <div>
         <label>
