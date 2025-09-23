@@ -3,11 +3,12 @@ import ReactDOM from "react-dom/client";
 import Checkbox from "@mui/material/Checkbox";
 
 interface OptionsData {
+  
   name: string;
   email: string;
 }
 
-const label = { inputProps: { "aria-label": "Checkbox demo" } };
+const label = { inputProps: { "aria-label": "Checkbox" } };
 
 const Options: React.FC = () => {
   const [name, setName] = useState<string>("");
