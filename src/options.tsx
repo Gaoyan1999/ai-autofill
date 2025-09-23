@@ -7,7 +7,7 @@ interface OptionsData {
   email: string;
 }
 
-const label = { inputProps: { "aria-label": "Checkbox demo" } };
+const label = { inputProps: { "aria-label": "Checkbox" } };
 
 const Options: React.FC = () => {
   const [name, setName] = useState<string>("");
