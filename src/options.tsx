@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import Checkbox from "@mui/material/Checkbox";
 import { Collapse, IconButton, Box } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-
+import './index.css'
 interface OptionsData {
   name: string;
   email: string;
@@ -41,6 +41,10 @@ const Options: React.FC = () => {
           />
         </IconButton>
         Personal Info
+        <div className="flex">
+          <div>1</div>
+          <div>2</div>
+        </div>
       </div>
       <Collapse in={open}>
         <Box sx={{ p: 2, mt: 1 }}>这里是展开的内容</Box>
