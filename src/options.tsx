@@ -1,17 +1,50 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
-import Checkbox from "@mui/material/Checkbox";
 import "./index.css";
 import { CollapseSection } from "./CollapseSection";
 import { InfoList } from "./InfoList";
-import { Box, TextField, Button, ThemeProvider } from "@mui/material";
+import { Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { blackWhiteTheme } from "./theme";
+import { isEmpty } from "lodash";
 
 interface InfoData {
   label: string;
-  value: string;
+  value?: string;
 }
+
+type PersonalDataSet = {
+  sections: { category: string; items: InfoData[] }[];
+  lastUpdated?: string;
+};
+
+const defaultPersonalDataSet: PersonalDataSet = {
+  sections: [
+    {
+      category: "Personal Info",
+      items: [
+        { label: "Email", value: "" },
+        { label: "Name", value: "" },
+        { label: "Phone", value: "" },
+        { label: "Address", value: "" },
+      ],
+    },
+    {
+      category: "Education",
+      items: [
+        { label: "School", value: "" },
+        { label: "Major", value: "" },
+      ],
+    },
+    {
+      category: "Work Experience",
+      items: [
+        { label: "Company", value: "" },
+        { label: "Position", value: "" },
+      ],
+    },
+  ],
+};
+
 const STORAGE_KEY = "userInfo";
 
 const Options: React.FC = () => {
@@ -19,8 +52,13 @@ const Options: React.FC = () => {
 
   useEffect(() => {
     chrome.storage.local.get([STORAGE_KEY], (result) => {
-      if (result[STORAGE_KEY]) {
-        setInfo(result[STORAGE_KEY]);
+      const personInfo = result[STORAGE_KEY];
+      if (personInfo) {
+        // filter out empty items
+        const filteredInfo = personInfo.filter(
+          (item: InfoData) => !isEmpty(item.label) || !isEmpty(item.value)
+        );
+        setInfo(filteredInfo);
       } else {
         setInfo([
           { label: "Email", value: "" },
@@ -67,8 +105,8 @@ const Options: React.FC = () => {
         </div>
       </CollapseSection>
 
-      <CollapseSection title="Account Settings">
-        <p>TODO: 账号设置内容</p>
+      <CollapseSection title="Education">
+        <div>TODO: Education</div>
       </CollapseSection>
     </div>
   );

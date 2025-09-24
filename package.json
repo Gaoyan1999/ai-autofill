@@ -16,11 +16,13 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.2",
     "@mui/material": "^7.3.2",
+    "lodash": "^4.17.21",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
-  "devDependencies": {    
+  "devDependencies": {
     "@types/chrome": "^0.1.12",
+    "@types/lodash": "^4.17.20",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.3",

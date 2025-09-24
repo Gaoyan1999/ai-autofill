@@ -84,9 +84,9 @@ async function askAI(inputElements) {
 `;
     console.log(autoFillPrompt);
     const aiResponse = await languageModel.prompt(autoFillPrompt);
-    console.log('aiReponse:',aiResponse);
+    console.log('aiReponse:', aiResponse);
     const resultsArray = handleAiJsonResponse(aiResponse);
-    console.log("processed:",resultsArray);
+    console.log("processed:", resultsArray);
     resultsArray.forEach((answer, index) => {
         inputElements[index].aiAnswer = answer;
     });
@@ -95,5 +95,15 @@ async function askAI(inputElements) {
 
 function handleAiJsonResponse(jsonstring) {
     const match = jsonstring.match(/```json\s*([\s\S]*?)```/i);
-    return JSON.parse(match ? match[1].trim() : jsonstring);
+    const object = JSON.parse(match ? match[1].trim() : jsonstring);
+    if (Array.isArray(object)) {
+        return object.map(item => {
+            if (item === 'undefined' || item === 'null') {
+                return '';
+            }
+            return item;
+        });
+    } else {
+        return [];
+    }
 }
