@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import Checkbox from "@mui/material/Checkbox";
+import { Collapse, IconButton, Box } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 interface OptionsData {
-  
   name: string;
   email: string;
 }
@@ -11,51 +12,40 @@ interface OptionsData {
 const label = { inputProps: { "aria-label": "Checkbox" } };
 
 const Options: React.FC = () => {
-  const [name, setName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
+  const [open, setOpen] = React.useState(false);
+  // useEffect(() => {
+  //   chrome.storage.sync.get(
+  //     ["name", "email"],
+  //     (result: Partial<OptionsData>) => {
+  //       if (result.name) setName(result.name);
+  //       if (result.email) setEmail(result.email);
+  //     }
+  //   );
+  // }, []);
 
-  useEffect(() => {
-    chrome.storage.sync.get(
-      ["name", "email"],
-      (result: Partial<OptionsData>) => {
-        if (result.name) setName(result.name);
-        if (result.email) setEmail(result.email);
-      }
-    );
-  }, []);
-
-  const saveOptions = () => {
-    chrome.storage.sync.set({ name, email }, () => {
-      alert("Options saved!");
-    });
-  };
+  // const saveOptions = () => {
+  //   chrome.storage.sync.set({ name, email }, () => {
+  //     alert("Options saved!");
+  //   });
+  // };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial" }}>
-      <Checkbox {...label} defaultChecked />
-      <h2>Extension Settings</h2>
+    <Box>
       <div>
-        <label>
-          Name:{" "}
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+        <IconButton onClick={() => setOpen(!open)}>
+          <ExpandMoreIcon
+            style={{
+              transform: open ? "rotate(0deg)" : "rotate(-90deg)",
+              transition: "0.3s",
+            }}
           />
-        </label>
+        </IconButton>
+        Personal Info
       </div>
-      <div>
-        <label>
-          Email:{" "}
-          <input
-            type="text"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </label>
-      </div>
-      <button onClick={saveOptions}>Save</button>
-    </div>
+      <Collapse in={open}>
+        <Box sx={{ p: 2, mt: 1 }}>这里是展开的内容</Box>
+      </Collapse>
+    </Box>
   );
 };
 
