@@ -1,55 +1,38 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import Checkbox from "@mui/material/Checkbox";
-import { Collapse, IconButton, Box } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import './index.css'
-interface OptionsData {
-  name: string;
-  email: string;
+import "./index.css";
+import { CollapseSection } from "./CollapseSection";
+import { InfoList } from "./InfoList";
+import { Box, TextField, Button } from "@mui/material";
+
+interface InfoData {
+  label: string;
+  value: string;
 }
 
-const label = { inputProps: { "aria-label": "Checkbox" } };
-
 const Options: React.FC = () => {
-  const [open, setOpen] = React.useState(false);
-  // useEffect(() => {
-  //   chrome.storage.sync.get(
-  //     ["name", "email"],
-  //     (result: Partial<OptionsData>) => {
-  //       if (result.name) setName(result.name);
-  //       if (result.email) setEmail(result.email);
-  //     }
-  //   );
-  // }, []);
-
-  // const saveOptions = () => {
-  //   chrome.storage.sync.set({ name, email }, () => {
-  //     alert("Options saved!");
-  //   });
-  // };
-
+  const [info, setInfo] = useState<InfoData[]>([
+    { label: "Email", value: "daniel@example.com" },
+    { label: "Phone", value: "+61 400 123 456" },
+    { label: "Location", value: "Sydney, Australia" },
+  ]);
+  const handleAdd = () => {
+    setInfo([...info, { label: "", value: "" }]);
+  };
   return (
-    <Box>
-      <div>
-        <IconButton onClick={() => setOpen(!open)}>
-          <ExpandMoreIcon
-            style={{
-              transform: open ? "rotate(0deg)" : "rotate(-90deg)",
-              transition: "0.3s",
-            }}
-          />
-        </IconButton>
-        Personal Info
-        <div className="flex">
-          <div>1</div>
-          <div>2</div>
-        </div>
-      </div>
-      <Collapse in={open}>
-        <Box sx={{ p: 2, mt: 1 }}>这里是展开的内容</Box>
-      </Collapse>
-    </Box>
+    <div className="mx-4">      
+      <CollapseSection title="Personal Info">
+        <InfoList items={info} defaultProperties={["Email", "Name"]} />
+        <Button onClick={handleAdd} variant="text" sx={{ mt: 1 }}>
+            ADD MORE +
+          </Button>
+      </CollapseSection>
+
+      <CollapseSection title="Account Settings">
+        <p>TODO: 账号设置内容</p>
+      </CollapseSection>
+    </div>
   );
 };
 
