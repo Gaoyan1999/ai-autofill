@@ -4,8 +4,8 @@ import BackspaceIcon from '@mui/icons-material/Backspace';
 
 interface InfoItemProps {
   label: string;
-  value: string;
-  onChange: (label: string, value: string) => void;
+  value?: string;
+  onChange: (label: string, value?: string) => void;
   onDelete?: () => void;
   showDeleteButton?: boolean;
 }

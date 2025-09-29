@@ -3,9 +3,9 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import { CollapseSection } from "./CollapseSection";
 import { InfoList } from "./InfoList";
+import { isEmpty } from "lodash";
 import { Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { isEmpty } from "lodash";
 
 interface InfoData {
   label: string;
@@ -45,45 +45,71 @@ const defaultPersonalDataSet: PersonalDataSet = {
   ],
 };
 
-const STORAGE_KEY = "userInfo";
+const STORAGE_KEY = "personalDataSet";
 
 const Options: React.FC = () => {
-  const [info, setInfo] = useState<InfoData[]>([]);
+  const [personalDataSet, setPersonalDataSet] = useState<PersonalDataSet>(
+    defaultPersonalDataSet
+  );
+
+  const handleSectionChange = (index: number, items: InfoData[]) => {
+    const newSections = [...personalDataSet.sections];
+    newSections[index] = {
+      category: newSections[index]!.category,
+      items,
+    };
+    setPersonalDataSet({ ...personalDataSet, sections: newSections });
+  };
 
   useEffect(() => {
     chrome.storage.local.get([STORAGE_KEY], (result) => {
-      const personInfo = result[STORAGE_KEY];
-      if (personInfo) {
+      const personalDataSet = result[STORAGE_KEY];
+      if (personalDataSet) {
         // filter out empty items
-        const filteredInfo = personInfo.filter(
-          (item: InfoData) => !isEmpty(item.label) || !isEmpty(item.value)
-        );
-        setInfo(filteredInfo);
+        const filteredSections = (
+          personalDataSet as PersonalDataSet
+        ).sections.filter((section) => section.items.length > 0);
+        filteredSections.forEach((section) => {
+          section.items = section.items.filter(
+            (item) => !isEmpty(item.label) || !isEmpty(item.value)
+          );
+        });
+        setPersonalDataSet({
+          ...personalDataSet,
+          sections: filteredSections,
+        });
       } else {
-        setInfo([
-          { label: "Email", value: "" },
-          { label: "Name", value: "" },
-        ]);
+        setPersonalDataSet(defaultPersonalDataSet);
       }
     });
   }, []);
   useEffect(() => {
-    if (info.length > 0) {
-      chrome.storage.local.set({ [STORAGE_KEY]: info });
+    console.log(personalDataSet);
+    if (personalDataSet.sections.length > 0) {
+      chrome.storage.local.set({ [STORAGE_KEY]: personalDataSet });
     }
-  }, [info]);
+  }, [personalDataSet]);
 
-  const handleAdd = () => {
-    setInfo([...info, { label: "", value: "" }]);
+  const handleAddItem = (index: number) => {
+    const newSections = [...personalDataSet.sections];
+    const section = newSections[index]!;
+    newSections[index] = {
+      category: section.category,
+      items: [...section.items, { label: "", value: "" }],
+    };
+    setPersonalDataSet({ ...personalDataSet, sections: newSections });
   };
 
   return (
     <div className="mx-4">
-      <CollapseSection title="Personal Info">
-        <InfoList onChange={setInfo} items={info} />
-        <div className="flex justify-center">
+      {personalDataSet.sections.map((section, index) => (
+        <CollapseSection title={section.category}>
+          <InfoList
+            onChange={(items) => handleSectionChange(index, items)}
+            items={section.items}
+          />
           <Button
-            onClick={handleAdd}
+            onClick={() => handleAddItem(index)}
             variant="outlined"
             className="flex items-center gap-2"
             sx={{
@@ -102,12 +128,8 @@ const Options: React.FC = () => {
             <span>ADD MORE</span>
             <AddIcon />
           </Button>
-        </div>
-      </CollapseSection>
-
-      <CollapseSection title="Education">
-        <div>TODO: Education</div>
-      </CollapseSection>
+        </CollapseSection>
+      ))}
     </div>
   );
 };
