@@ -83,7 +83,7 @@ const Options: React.FC = () => {
       }
     });
   }, []);
-  useEffect(() => {    
+  useEffect(() => {
     if (personalDataSet.sections.length > 0) {
       chrome.storage.local.set({ [STORAGE_KEY]: personalDataSet });
     }
@@ -100,35 +100,40 @@ const Options: React.FC = () => {
   };
 
   return (
-    <div className="mx-4">
-      {personalDataSet.sections.map((section, index) => (
-        <CollapseSection title={section.category}>
-          <InfoList
-            onChange={(items) => handleSectionChange(index, items)}
-            items={section.items}
-          />
-          <Button
-            onClick={() => handleAddItem(index)}
-            variant="outlined"
-            className="flex items-center gap-2"
-            sx={{
-              mt: 1,
-              color: "#000",
-              borderColor: "#000",
-              backgroundColor: "#fff",
-              "&:hover": {
-                backgroundColor: "#000",
-                color: "#fff",
+    <div className="h-full">
+      <div className="bg-black text-white py-6 px-8 rounded-b-lg mb-2 shadow-lg border-gray-300">
+        <h1 className="text-3xl font-bold">AI-autofill</h1>
+      </div>
+      <div className="mx-4">
+        {personalDataSet.sections.map((section, index) => (
+          <CollapseSection title={section.category}>
+            <InfoList
+              onChange={(items) => handleSectionChange(index, items)}
+              items={section.items}
+            />
+            <Button
+              onClick={() => handleAddItem(index)}
+              variant="outlined"
+              className="flex items-center gap-2"
+              sx={{
+                mt: 1,
+                color: "#000",
                 borderColor: "#000",
-              },
-              border: "1.5px solid #000",
-            }}
-          >
-            <span>ADD MORE</span>
-            <AddIcon />
-          </Button>
-        </CollapseSection>
-      ))}
+                backgroundColor: "#fff",
+                "&:hover": {
+                  backgroundColor: "#000",
+                  color: "#fff",
+                  borderColor: "#000",
+                },
+                border: "1.5px solid #000",
+              }}
+            >
+              <span>ADD MORE</span>
+              <AddIcon />
+            </Button>
+          </CollapseSection>
+        ))}
+      </div>
     </div>
   );
 };
