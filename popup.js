@@ -22,7 +22,11 @@ document.getElementById('openOptions').addEventListener('click', () => {
     chrome.runtime.openOptionsPage();
 });
 function autoFillForm() {
-    const extractInputInfo = (input) => {
+    const extractInputInfo = (input, index) => {
+        // Add a unique custom attribute to identify this element
+        const uniqueId = `ai-autofill-${Date.now()}-${index}`;
+        input.setAttribute('data-ai-autofill-id', uniqueId);
+
         return {
             id: input.id,
             name: input.name,
@@ -31,7 +35,8 @@ function autoFillForm() {
             label: (() => {
                 const label = document.querySelector(`label[for="${input.id}"]`);
                 return label ? label.innerText : null;
-            })()
+            })(),
+            aiAutofillId: uniqueId  // Include the custom ID for later reference
         };
     }
     const forms = document.querySelectorAll("form");
@@ -50,7 +55,7 @@ function autoFillForm() {
                 const isEmpty = !el.value || el.value.trim() === "";
                 return visible && notDisabled && notReadonly && isEmpty;
             });
-        const extracted = inputElements.map(extractInputInfo);
+        const extracted = inputElements.map((input, index) => extractInputInfo(input, index));
         return extracted;
 
         // TODO: auto fill select    
@@ -68,7 +73,15 @@ function fillForm(aiResult) {
     }
 
     aiResult.forEach(el => {
-        let input = document.querySelector(`[name="${el.name}"]`);
+        // First try to find by the custom attribute (most reliable)
+        let input = document.querySelector(`[data-ai-autofill-id="${el.aiAutofillId}"]`);
+
+        // Fallback to name attribute if custom ID not found
+        if (!input && el.name) {
+            input = document.querySelector(`[name="${el.name}"]`);
+        }
+
+        // Fallback to ID if still not found
         if (!input && el.id) {
             input = document.getElementById(el.id);
         }
@@ -77,8 +90,10 @@ function fillForm(aiResult) {
         }
         input.value = el.aiAnswer;
         input.dispatchEvent(new Event("input", { bubbles: true }));
-    });
 
+        // Clean up the custom attribute after successful fill
+        input.removeAttribute('data-ai-autofill-id');
+    });
 }
 
 

@@ -1,6 +1,8 @@
 // background.js
 console.log("Background service worker started.");
 let languageModel;
+const STORAGE_KEY = "personalDataSet";
+
 /**
   type: autoFillForm
   data: inputElements
@@ -34,9 +36,41 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             sendResponse({ status: "error", reason: "Unknown type" });
             return false;
     }
-});;
+});
 
+// Function to retrieve personal data from Chrome storage
+async function getPersonalData() {
+    return new Promise((resolve) => {
+        chrome.storage.local.get([STORAGE_KEY], (result) => {
+            const personalDataSet = result[STORAGE_KEY];
+            resolve(personalDataSet || { sections: [] });
+        });
+    });
+}
 
+// Function to format personal data for AI prompt
+function formatPersonalInfo(personalDataSet) {
+    if (!personalDataSet || !personalDataSet.sections) {
+        return "No personal information available.";
+    }
+
+    const personalInfoLines = [];
+
+    personalDataSet.sections.forEach(section => {
+        if (section.items && section.items.length > 0) {
+            personalInfoLines.push(`${section.category}:`);
+            section.items.forEach(item => {
+                if (item.label && item.value) {
+                    personalInfoLines.push(`- ${item.label}: ${item.value}`);
+                }
+            });
+        }
+    });
+
+    return personalInfoLines.length > 0
+        ? personalInfoLines.join('\n        ')
+        : "No personal information available.";
+}
 
 async function askAI(inputElements) {
     if (!languageModel) {
@@ -47,6 +81,11 @@ async function askAI(inputElements) {
             }],
         });
     }
+
+    // Retrieve personal data from storage
+    const personalDataSet = await getPersonalData();
+    const personalInfo = formatPersonalInfo(personalDataSet);
+
     const formContext = inputElements.map((el, idx) => {
 
         const fieldInfo = {};
@@ -67,11 +106,7 @@ async function askAI(inputElements) {
     const autoFillPrompt = `
 
         You are a helpful AI assistant. The user has provided their personal info:
-        - Name: Daniel Li
-        - Email: daniel.li@example.com
-        - Country: Australia
-        - Likes newsletter: yes
-        - Work phone: +61 0402809602
+        ${personalInfo}
 
         The form fields are listed below:
         ${formContext}
@@ -81,8 +116,8 @@ async function askAI(inputElements) {
         2. The array **must have exactly the same length as the number of form fields (the number would be ${inputElements.length}) ** (one value for each field, in the same order).
         3. If the user's info does not provide a value for a field, output an empty string "" for that position.
         4. Do **not** add explanations, comments, or any text outside the JSON array.
-`;    
-    console.log('inputElements:', inputElements);
+`;
+    console.log('autoFillPrompt:', autoFillPrompt);
     const aiResponse = await languageModel.prompt(autoFillPrompt);
     console.log('aiResponse:', aiResponse);
     const resultsArray = handleAiJsonResponse(aiResponse);
