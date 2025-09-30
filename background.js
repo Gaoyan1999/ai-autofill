@@ -81,12 +81,12 @@ async function askAI(inputElements) {
         2. The array **must have exactly the same length as the number of form fields (the number would be ${inputElements.length}) ** (one value for each field, in the same order).
         3. If the user's info does not provide a value for a field, output an empty string "" for that position.
         4. Do **not** add explanations, comments, or any text outside the JSON array.
-`;
-    console.log(autoFillPrompt);
+`;    
+    console.log('inputElements:', inputElements);
     const aiResponse = await languageModel.prompt(autoFillPrompt);
-    console.log('aiReponse:', aiResponse);
+    console.log('aiResponse:', aiResponse);
     const resultsArray = handleAiJsonResponse(aiResponse);
-    console.log("processed:", resultsArray);
+    console.log("processed aiResponse:", resultsArray);
     resultsArray.forEach((answer, index) => {
         inputElements[index].aiAnswer = answer;
     });

@@ -4,14 +4,8 @@ document.getElementById('autofillBtn').addEventListener('click', async () => {
         target: { tabId: tab.id },
         function: autoFillForm
     });
-    if (result && result.length > 0) {
-        console.log(result[0].result);
-    } else {
-        console.log("No result");
-    }
     const labelElements = result[0].result;
     chrome.runtime.sendMessage({ type: "autoFillForm", data: labelElements }, (data) => {
-        console.log('receive data', data);
         if (data.status !== "ok") {
             return;
         }
@@ -43,7 +37,7 @@ function autoFillForm() {
     const forms = document.querySelectorAll("form");
     if (forms.length > 0) {
         // TODO: identify the element that seems to be the form
-        const targetForm = forms[1];
+        const targetForm = forms[0];
         // find all the input elements in the form
         const inputElements = Array.from(targetForm.querySelectorAll("input, textarea, select"))
             .filter(el => {
@@ -56,7 +50,6 @@ function autoFillForm() {
                 const isEmpty = !el.value || el.value.trim() === "";
                 return visible && notDisabled && notReadonly && isEmpty;
             });
-        console.log(inputElements);
         const extracted = inputElements.map(extractInputInfo);
         return extracted;
 
@@ -70,7 +63,6 @@ function autoFillForm() {
 }
 
 function fillForm(aiResult) {
-    console.log(aiResult);
     if (!Array.isArray(aiResult)) {
         return;
     }
@@ -80,7 +72,6 @@ function fillForm(aiResult) {
         if (!input && el.id) {
             input = document.getElementById(el.id);
         }
-        console.log(input);
         if (!input) {
             return;
         }

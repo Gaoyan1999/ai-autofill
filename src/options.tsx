@@ -83,8 +83,7 @@ const Options: React.FC = () => {
       }
     });
   }, []);
-  useEffect(() => {
-    console.log(personalDataSet);
+  useEffect(() => {    
     if (personalDataSet.sections.length > 0) {
       chrome.storage.local.set({ [STORAGE_KEY]: personalDataSet });
     }
