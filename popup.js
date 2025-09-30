@@ -71,7 +71,6 @@ function fillForm(aiResult) {
     if (!Array.isArray(aiResult)) {
         return;
     }
-
     aiResult.forEach(el => {
         // First try to find by the custom attribute (most reliable)
         let input = document.querySelector(`[data-ai-autofill-id="${el.aiAutofillId}"]`);
@@ -95,7 +94,3 @@ function fillForm(aiResult) {
         input.removeAttribute('data-ai-autofill-id');
     });
 }
-
-
-
-
