@@ -6,7 +6,7 @@ import { InfoList } from "./InfoList";
 import { isEmpty } from "lodash";
 import { Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { processPDFFile } from "./pdf-processor";
+import { extractText, getDocumentProxy } from "unpdf";
 
 interface InfoData {
   label: string;
@@ -73,20 +73,12 @@ const Options: React.FC = () => {
     setIsProcessing(true);
     try {
       const arrayBuffer = await selectedFile.arrayBuffer();
-      const result = await processPDFFile(arrayBuffer);
+      // Then, load the PDF file into a PDF.js document
+      const pdf = await getDocumentProxy(arrayBuffer);
 
-      console.log("📄 Metadata:", result.metadata);
-      console.log("📄 Page count:", result.pageCount);
-      console.log(
-        "📄 First page text:",
-        result?.pages[0]?.text?.slice(0, 500),
-        "..."
-      );
-      console.log("📄 Full text length:", result.fullText.length);
-
-      alert(
-        `PDF processed successfully!\nPages: ${result.pageCount}\nText length: ${result.fullText.length} characters`
-      );
+      // Finally, extract the text from the PDF file
+      const { text } = await extractText(pdf, { mergePages: true });
+      console.log(text);
     } catch (error) {
       console.error("Error processing PDF:", error);
       alert("Error processing PDF file. Please try again.");
