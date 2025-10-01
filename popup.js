@@ -71,26 +71,87 @@ function fillForm(aiResult) {
     if (!Array.isArray(aiResult)) {
         return;
     }
-    aiResult.forEach(el => {
-        // First try to find by the custom attribute (most reliable)
-        let input = document.querySelector(`[data-ai-autofill-id="${el.aiAutofillId}"]`);
+    
+    // Add CSS for highlighting if not already present
+    if (!document.getElementById('ai-autofill-highlight-style')) {
+        const style = document.createElement('style');
+        style.id = 'ai-autofill-highlight-style';
+        style.textContent = `
+            .ai-autofill-highlight {
+                background-color: #f0fdf4 !important;
+                border: 1px solid #bbf7d0 !important;
+                box-shadow: 0 0 8px rgba(187, 247, 208, 0.3) !important;
+                transition: all 0.4s ease !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Helper function to scroll to element smoothly
+    const scrollToElement = (element) => {
+        element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'nearest'
+        });
+    };
+    
+    // Helper function to fill a single input
+    const fillSingleInput = (el, index) => {
+        return new Promise((resolve) => {
+            // Find the input element
+            let input = document.querySelector(`[data-ai-autofill-id="${el.aiAutofillId}"]`);
 
-        // Fallback to name attribute if custom ID not found
-        if (!input && el.name) {
-            input = document.querySelector(`[name="${el.name}"]`);
-        }
+            // Fallback to name attribute if custom ID not found
+            if (!input && el.name) {
+                input = document.querySelector(`[name="${el.name}"]`);
+            }
 
-        // Fallback to ID if still not found
-        if (!input && el.id) {
-            input = document.getElementById(el.id);
-        }
-        if (!input) {
-            return;
-        }
-        input.value = el.aiAnswer;
-        input.dispatchEvent(new Event("input", { bubbles: true }));
+            // Fallback to ID if still not found
+            if (!input && el.id) {
+                input = document.getElementById(el.id);
+            }
+            
+            if (!input) {
+                resolve();
+                return;
+            }
+            
+            // Scroll to the element
+            scrollToElement(input);
+            
+            // Wait a bit for scroll animation, then fill
+            setTimeout(() => {
+                // Fill the input
+                input.value = el.aiAnswer;
+                input.dispatchEvent(new Event("input", { bubbles: true }));
 
-        // Clean up the custom attribute after successful fill
-        input.removeAttribute('data-ai-autofill-id');
-    });
+                // Add highlight effect
+                input.classList.add('ai-autofill-highlight');
+                
+                // Remove highlight after 5 seconds
+                setTimeout(() => {
+                    input.classList.remove('ai-autofill-highlight');
+                }, 5000);
+
+                // Clean up the custom attribute after successful fill
+                input.removeAttribute('data-ai-autofill-id');
+                
+                // Wait a bit before moving to next element
+                setTimeout(() => {
+                    resolve();
+                }, 800);
+            }, 300);
+        });
+    };
+    
+    // Fill inputs sequentially
+    const fillSequentially = async () => {
+        for (let i = 0; i < aiResult.length; i++) {
+            await fillSingleInput(aiResult[i], i);
+        }
+    };
+    
+    // Start the sequential filling
+    fillSequentially();
 }
