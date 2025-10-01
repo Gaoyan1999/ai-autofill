@@ -79,6 +79,14 @@ const Options: React.FC = () => {
       // Finally, extract the text from the PDF file
       const { text } = await extractText(pdf, { mergePages: true });
       console.log(text);
+      chrome.runtime.sendMessage(
+        { type: "informationExtract", data: text },
+        (data) => {
+          if (data.status !== "ok") {
+            return;
+          }
+        }
+      );
     } catch (error) {
       console.error("Error processing PDF:", error);
       alert("Error processing PDF file. Please try again.");
