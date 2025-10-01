@@ -34,7 +34,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             return true;
 
         case "informationExtract":
-            console.log("informationExtract");
             const text = message.data;
             (async () => {
                 try {
@@ -124,6 +123,9 @@ async function fillElementsWithAI(inputElements) {
 
         You are a helpful AI assistant. The user has provided their personal info:
         ${personalInfo}
+
+        Here are some attachments that the user has provided:
+        ${personalDataSet.attachments?.map((attachment) => `- ${attachment.name}: ${attachment.content}`).join("\n")}
 
         The form fields are listed below:
         ${formContext}
