@@ -25,8 +25,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             const inputElements = message.data;
             (async () => {
                 try {
-                    const suggestedValues = await askAI(inputElements);
+                    const suggestedValues = await fillElementsWithAI(inputElements);
                     sendResponse({ status: "ok", values: suggestedValues });
+                } catch (err) {
+                    sendResponse({ status: "error", reason: err.message });
+                }
+            })();
+            return true;
+
+        case "informationExtract":
+            const text = message.data;
+            (async () => {
+                try {
+                    const information = await extractInformationWithAI(text);
+                    sendResponse({ status: "ok", values: information });
                 } catch (err) {
                     sendResponse({ status: "error", reason: err.message });
                 }
@@ -72,14 +84,18 @@ function formatPersonalInfo(personalDataSet) {
         : "No personal information available.";
 }
 
-async function askAI(inputElements) {
+async function initLanguageModel() {
+    languageModel = await LanguageModel.create({
+        initialPrompts: [{
+            role: 'system',
+            content: 'You are a helpful assistant that can read a webpage form context and suggest appropriate auto-fill values.'
+        }],
+    });
+}
+
+async function fillElementsWithAI(inputElements) {
     if (!languageModel) {
-        languageModel = await LanguageModel.create({
-            initialPrompts: [{
-                role: 'system',
-                content: 'You are a helpful assistant that can read a webpage form context and suggest appropriate auto-fill values.'
-            }],
-        });
+        await initLanguageModel();
     }
 
     // Retrieve personal data from storage
@@ -108,6 +124,9 @@ async function askAI(inputElements) {
         You are a helpful AI assistant. The user has provided their personal info:
         ${personalInfo}
 
+        Here are some attachments that the user has provided:
+        ${personalDataSet.attachments?.map((attachment) => `- ${attachment.name}: ${attachment.content}`).join("\n")}
+
         The form fields are listed below:
         ${formContext}
 
@@ -127,6 +146,35 @@ async function askAI(inputElements) {
     });
     return inputElements;
 }
+
+async function extractInformationWithAI(text) {
+    if (!languageModel) {
+        await initLanguageModel();
+    }
+
+    const extractPrompt = `
+        You are a helpful assistant that can extract information from a text.
+        The text is:
+        Context:
+        ${text}
+        
+        Your task:
+        1. Return **only a JSON of strings**.
+        2. Extract key information from Context, and put it in a JSON format.
+           The object should be like this:
+           sections: { category: string; items: InfoData[] }[];
+           Example:
+           {
+            sections: [
+                { category: "Personal Info", items: [{ label: "Name", value: "John Doe" }, { label: "Email", value: "john.doe@example.com" }] },
+                { category: "Education", items: [{ label: "School", value: "University of Example" }, { label: "Major", value: "Computer Science" }] }
+            ]
+           }
+    `;
+    const aiResponse = await languageModel.prompt(extractPrompt);
+    console.log('aiResponse:', aiResponse);
+}
+
 
 function handleAiJsonResponse(jsonstring) {
     const match = jsonstring.match(/```json\s*([\s\S]*?)```/i);
