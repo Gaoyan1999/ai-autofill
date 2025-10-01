@@ -6,6 +6,7 @@ import { InfoList } from "./InfoList";
 import { isEmpty } from "lodash";
 import { Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import { processPDFFile } from "./pdf-processor";
 
 interface InfoData {
   label: string;
@@ -51,6 +52,48 @@ const Options: React.FC = () => {
   const [personalDataSet, setPersonalDataSet] = useState<PersonalDataSet>(
     defaultPersonalDataSet
   );
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === "application/pdf") {
+      setSelectedFile(file);
+    } else {
+      alert("Please select a valid PDF file");
+    }
+  };
+
+  const handleProcessPDF = async () => {
+    if (!selectedFile) {
+      alert("Please select a PDF file first");
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const arrayBuffer = await selectedFile.arrayBuffer();
+      const result = await processPDFFile(arrayBuffer);
+
+      console.log("📄 Metadata:", result.metadata);
+      console.log("📄 Page count:", result.pageCount);
+      console.log(
+        "📄 First page text:",
+        result?.pages[0]?.text?.slice(0, 500),
+        "..."
+      );
+      console.log("📄 Full text length:", result.fullText.length);
+
+      alert(
+        `PDF processed successfully!\nPages: ${result.pageCount}\nText length: ${result.fullText.length} characters`
+      );
+    } catch (error) {
+      console.error("Error processing PDF:", error);
+      alert("Error processing PDF file. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const handleSectionChange = (index: number, items: InfoData[]) => {
     const newSections = [...personalDataSet.sections];
@@ -104,9 +147,45 @@ const Options: React.FC = () => {
       <div className="bg-black text-white py-6 px-8 rounded-b-lg mb-2 shadow-lg border-gray-300">
         <h1 className="text-3xl font-bold">AI-autofill</h1>
       </div>
+
+      {/* PDF Processing Section */}
+      <div className="mx-4 mb-4 p-4 border border-gray-300 rounded-lg">
+        <h2 className="text-lg font-semibold mb-3">PDF Processing Test</h2>
+        <div className="flex flex-col gap-3">
+          <input
+            type="file"
+            accept=".pdf"
+            onChange={handleFileSelect}
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          />
+          {selectedFile && (
+            <p className="text-sm text-gray-600">
+              Selected: {selectedFile.name} (
+              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+            </p>
+          )}
+          <Button
+            onClick={handleProcessPDF}
+            disabled={!selectedFile || isProcessing}
+            variant="contained"
+            sx={{
+              backgroundColor: "#1976d2",
+              "&:hover": {
+                backgroundColor: "#1565c0",
+              },
+              "&:disabled": {
+                backgroundColor: "#ccc",
+              },
+            }}
+          >
+            {isProcessing ? "Processing..." : "Process PDF"}
+          </Button>
+        </div>
+      </div>
+
       <div className="mx-4">
         {personalDataSet.sections.map((section, index) => (
-          <CollapseSection title={section.category}>
+          <CollapseSection key={index} title={section.category}>
             <InfoList
               onChange={(items) => handleSectionChange(index, items)}
               items={section.items}
