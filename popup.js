@@ -39,7 +39,18 @@ function autoFillForm() {
             aiAutofillId: uniqueId  // Include the custom ID for later reference
         };
     }
-    const forms = document.querySelectorAll("form");
+    // Only select forms that are not inside <header>, <script>, <style>, <nav>, or <footer>
+    const forms = Array.from(document.querySelectorAll("form")).filter(form => {
+        let parent = form.parentElement;
+        while (parent) {
+            const tag = parent.tagName && parent.tagName.toLowerCase();
+            if (["header", "script", "style", "nav", "footer"].includes(tag)) {
+                return false;
+            }
+            parent = parent.parentElement;
+        }
+        return true;
+    });
     if (forms.length > 0) {
         // TODO: identify the element that seems to be the form
         const targetForm = forms[0];
