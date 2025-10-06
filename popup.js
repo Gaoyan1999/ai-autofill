@@ -51,7 +51,7 @@ function autoFillForm() {
         }
         return true;
     });
-    if (forms.length > 0) {
+    if (forms.length === 1) {
         // TODO: identify the element that seems to be the form
         const targetForm = forms[0];
         // find all the input elements in the form
@@ -73,6 +73,10 @@ function autoFillForm() {
         // find all the select elements in the form
         // const selectElements = targetForm.querySelectorAll("select");
         // console.log(selectElements);
+    }
+    else if (forms.length > 1) {
+        // TODO: show a list of forms and let the user select the form they want to fill
+        alert("Multiple forms found on this page. Please select the form you want to fill.");
     } else {
         alert("No form found on this page.");
     }
