@@ -107,12 +107,9 @@ async function fillElementsWithAI(inputElements) {
         const element = inputElements[i];
 
         const fieldInfo = {};
-        if (element.id) fieldInfo.id = element.id;
-        if (element.name) fieldInfo.name = element.name;
-        if (element.type) fieldInfo.type = element.type;
+        if (element.label) fieldInfo.label = element.label;
         if (element.options) fieldInfo.options = element.options;
         if (element.placeholder) fieldInfo.placeholder = element.placeholder;
-        if (element.label) fieldInfo.label = element.label;
         if (element.value) fieldInfo.value = element.value;
 
         const textLines = Object.entries(fieldInfo)

@@ -31,6 +31,37 @@ document.getElementById('openOptions').addEventListener('click', () => {
     chrome.runtime.openOptionsPage();
 });
 function autoFillForm() {
+    const findLabelForInput = (input) => {
+        // Method 1: Check for explicit label association via 'for' attribute
+        if (input.id) {
+            const label = document.querySelector(`label[for="${input.id}"]`);
+            if (label && label.innerText.trim()) {
+                return label.innerText.trim();
+            }
+        }
+        // Method 2: Find the nearest label element before the input
+        let current = input.previousElementSibling;
+        while (current) {
+            if (current.tagName === 'LABEL' && current.innerText.trim()) {
+                return current.innerText.trim();
+            }
+            current = current.previousElementSibling;
+        }
+
+        // Method 3: If not found in siblings, search in parent container
+        let parent = input.parentElement;
+        while (parent && parent !== document.body) {
+            const labelsInParent = parent.querySelectorAll('label');
+            for (const label of labelsInParent) {
+                if (label.innerText.trim()) {
+                    return label.innerText.trim();
+                }
+            }
+            parent = parent.parentElement;
+        }
+
+        return null;
+    }
     const extractInputInfo = (input, index) => {
         // Add a unique custom attribute to identify this element
         const uniqueId = `ai-autofill-${Date.now()}-${index}`;
@@ -38,9 +69,9 @@ function autoFillForm() {
         if (input.type === "select-one") {
             // find all the options in the select
             const options = Array.from(input.querySelectorAll("option"));
+            const label = findLabelForInput(input);
             return {
-                id: input.id,
-                name: input.name,
+                label: [input.id, input.name, label].filter(Boolean).join(" | "),
                 type: input.type,
                 placeholder: input.placeholder,
                 options: options.map((option) => {
@@ -50,9 +81,9 @@ function autoFillForm() {
             }
         }
 
+        const label = findLabelForInput(input);
         return {
-            id: input.id,
-            name: input.name,
+            label: [input.id, input.name, label].filter(Boolean).join(" | "),
             type: input.type,
             placeholder: input.placeholder,
             aiAutofillId: uniqueId  // Include the custom ID for later reference
@@ -87,9 +118,11 @@ function autoFillForm() {
                 const isEmpty = !el.value || el.value.trim() === "";
                 return visible && notDisabled && notReadonly && isEmpty;
             });
-        return inputElements.map((input, index) => extractInputInfo(input, index))
-        // filter out the elements that haven't clear meaning.
-        .filter(info => !isEmpty(info.id) || !isEmpty(info.name));
+        const extracted = inputElements.map((input, index) => extractInputInfo(input, index))
+            // filter out the elements that haven't clear meaning.
+            .filter(info => !isEmpty(info.label));
+        console.log("extracted:", extracted);
+        return extracted;
     }
     else if (forms.length > 1) {
         // TODO: show a list of forms and let the user select the form they want to fill
