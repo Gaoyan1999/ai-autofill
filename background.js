@@ -193,7 +193,6 @@ async function fillElementsWithAIV2(inputElements) {
         `;
 
         console.log(`Processing field ${i + 1}/${inputElements.length}:`, fieldInfo);
-        console.log(`singleFieldPrompt:`, singleFieldPrompt);
         const aiResponse = await languageModel.prompt(singleFieldPrompt);
         console.log(`AI response for field ${i + 1}:`, aiResponse);
 
@@ -305,20 +304,11 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
                         aiAutofillId: uniqueId  // Include the custom ID for later reference
                     };
                 }
-
-
-                // 这个函数在网页中执行，可以访问 DOM
                 const el = document.activeElement;
-
-
-                console.log("Current selected element in page:", el);
-                const x = extractInputInfo(el);
-                console.log("x:", x);
-                return x;
+                return extractInputInfo(el);
             }
         });
         const suggestedValues = await fillElementsWithAIV2([result.result]);
-        console.log("suggestedValues:", suggestedValues);
         // fill the suggested values
         await chrome.scripting.executeScript({
             target: { tabId: tab.id },
