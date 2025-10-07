@@ -5,17 +5,26 @@ document.getElementById('autofillBtn').addEventListener('click', async () => {
         function: autoFillForm
     });
     const labelElements = result[0].result;
-    chrome.runtime.sendMessage({ type: "autoFillForm", data: labelElements }, (data) => {
-        if (data.status !== "ok") {
-            return;
+    // send message to background.js one by one
+    // Process labelElements serially, waiting for each to finish before starting the next
+    async function processSerially() {
+        for (let i = 0; i < labelElements.length; i++) {
+            const data = await new Promise((resolve) => {
+                chrome.runtime.sendMessage({ type: "autoFillForm", data: [labelElements[i]] }, (response) => {
+                    resolve(response);
+                });
+            });
+            if (data.status !== "ok") {
+                continue;
+            }
+            chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                func: fillForm,
+                args: [data.values]
+            });
         }
-        chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            func: fillForm,
-            args: [data.values]
-        });
-    });
-
+    }
+    processSerially();
 });
 
 document.getElementById('openOptions').addEventListener('click', () => {
@@ -49,6 +58,9 @@ function autoFillForm() {
             aiAutofillId: uniqueId  // Include the custom ID for later reference
         };
     }
+    const isEmpty = (value) => {
+        return value === null || value === undefined || value === "";
+    }
     // Only select forms that are not inside <header>, <script>, <style>, <nav>, or <footer>
     const forms = Array.from(document.querySelectorAll("form")).filter(form => {
         let parent = form.parentElement;
@@ -62,7 +74,6 @@ function autoFillForm() {
         return true;
     });
     if (forms.length === 1) {
-        // TODO: identify the element that seems to be the form
         const targetForm = forms[0];
         // find all the input elements in the form
         const inputElements = Array.from(targetForm.querySelectorAll("input, textarea, select"))
@@ -76,13 +87,9 @@ function autoFillForm() {
                 const isEmpty = !el.value || el.value.trim() === "";
                 return visible && notDisabled && notReadonly && isEmpty;
             });
-        const extracted = inputElements.map((input, index) => extractInputInfo(input, index));
-        return extracted;
-
-        // TODO: auto fill select    
-        // find all the select elements in the form
-        // const selectElements = targetForm.querySelectorAll("select");
-        // console.log(selectElements);
+        return inputElements.map((input, index) => extractInputInfo(input, index))
+        // filter out the elements that haven't clear meaning.
+        .filter(info => !isEmpty(info.id) || !isEmpty(info.name));
     }
     else if (forms.length > 1) {
         // TODO: show a list of forms and let the user select the form they want to fill
@@ -156,7 +163,6 @@ function fillForm(aiResult) {
                     }
                     input.dispatchEvent(new Event("change", { bubbles: true }));
                 } else {
-
                     input.value = el.aiAnswer;
                     input.dispatchEvent(new Event("input", { bubbles: true }));
                 }
@@ -191,3 +197,4 @@ function fillForm(aiResult) {
     // Start the sequential filling
     fillSequentially();
 }
+
