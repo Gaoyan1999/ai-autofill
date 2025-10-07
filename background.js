@@ -25,7 +25,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             const inputElements = message.data;
             (async () => {
                 try {
-                    const suggestedValues = await fillElementsWithAI(inputElements);
+                    const suggestedValues = await fillElementsWithAIV2(inputElements);
                     sendResponse({ status: "ok", values: suggestedValues });
                 } catch (err) {
                     sendResponse({ status: "error", reason: err.message });
@@ -140,13 +140,83 @@ async function fillElementsWithAI(inputElements) {
     console.log('autoFillPrompt:', autoFillPrompt);
     const aiResponse = await languageModel.prompt(autoFillPrompt);
     console.log('aiResponse:', aiResponse);
-    let resultsArray = handleAiJsonResponse(aiResponse);    
+    let resultsArray = handleAiJsonResponse(aiResponse);
     console.log("processed aiResponse:", resultsArray);
     resultsArray.forEach((answer, index) => {
         inputElements[index].aiAnswer = answer;
     });
     return inputElements;
 }
+
+async function fillElementsWithAIV2(inputElements) {
+    if (!languageModel) {
+        await initLanguageModel();
+    }
+
+    // Retrieve personal data from storage
+    const personalDataSet = await getPersonalData();
+    const personalInfo = formatPersonalInfo(personalDataSet);
+
+    // Process each element one by one
+    for (let i = 0; i < inputElements.length; i++) {
+        const element = inputElements[i];
+
+        const fieldInfo = {};
+        if (element.id) fieldInfo.id = element.id;
+        if (element.name) fieldInfo.name = element.name;
+        if (element.type) fieldInfo.type = element.type;
+        if (element.options) fieldInfo.options = element.options;
+        if (element.placeholder) fieldInfo.placeholder = element.placeholder;
+        if (element.label) fieldInfo.label = element.label;
+        if (element.value) fieldInfo.value = element.value;
+
+        const textLines = Object.entries(fieldInfo)
+            .map(([key, val]) => `${key}: ${val}`)
+            .join("\n");
+
+        const singleFieldPrompt = `
+            You are a helpful AI assistant. The user has provided their personal info:
+            ${personalInfo}
+
+            Here are some attachments that the user has provided:
+            ${personalDataSet.attachments?.map((attachment) => `- ${attachment.name}: ${attachment.content}`).join("\n")}
+
+            You need to fill this specific form field:
+            Field Info:
+            ${textLines}
+
+            Your task: return **only a single string value** for this field.
+            1. Return **only a string value** (not an array, not JSON, just the value).
+            2. If the user's info does not provide a value for this field, return an empty string "".
+            3. Do **not** add explanations, comments, or any text outside the value.
+            4. The value should be appropriate for the field type and context.
+        `;
+
+        console.log(`Processing field ${i + 1}/${inputElements.length}:`, fieldInfo);
+        const aiResponse = await languageModel.prompt(singleFieldPrompt);
+        console.log(`AI response for field ${i + 1}:`, aiResponse);
+
+        // Clean the response - remove any extra text and get just the value
+        let cleanValue = aiResponse.trim();
+
+        // Remove quotes if the AI wrapped the value in quotes
+        if ((cleanValue.startsWith('"') && cleanValue.endsWith('"')) ||
+            (cleanValue.startsWith("'") && cleanValue.endsWith("'"))) {
+            cleanValue = cleanValue.slice(1, -1);
+        }
+
+        // Handle special cases
+        if (cleanValue === 'undefined' || cleanValue === 'null' || cleanValue === 'null' || cleanValue === 'undefined') {
+            cleanValue = '';
+        }
+
+        inputElements[i].aiAnswer = cleanValue;
+        console.log(`Final value for field ${i + 1}:`, cleanValue);
+    }
+
+    return inputElements;
+}
+
 
 async function extractInformationWithAI(text) {
     if (!languageModel) {
