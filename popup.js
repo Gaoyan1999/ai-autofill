@@ -27,7 +27,6 @@ function autoFillForm() {
         const uniqueId = `ai-autofill-${Date.now()}-${index}`;
         input.setAttribute('data-ai-autofill-id', uniqueId);
         if (input.type === "select-one") {
-            console.log("select-one");
             // find all the options in the select
             const options = Array.from(input.querySelectorAll("option"));
             return {
@@ -152,12 +151,11 @@ function fillForm(aiResult) {
                 if (el.type === "select-one") {
                     // find the option with the value of el.aiAnswer
                     const option = input.querySelector(`option[value="${el.aiAnswer}"]`);
-                    console.log("option", option);
                     if (option) {
                         option.selected = true;
                     }
                     input.dispatchEvent(new Event("change", { bubbles: true }));
-                 } else {
+                } else {
 
                     input.value = el.aiAnswer;
                     input.dispatchEvent(new Event("input", { bubbles: true }));
