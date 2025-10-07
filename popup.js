@@ -26,16 +26,26 @@ function autoFillForm() {
         // Add a unique custom attribute to identify this element
         const uniqueId = `ai-autofill-${Date.now()}-${index}`;
         input.setAttribute('data-ai-autofill-id', uniqueId);
+        if (input.type === "select-one") {
+            // find all the options in the select
+            const options = Array.from(input.querySelectorAll("option"));
+            return {
+                id: input.id,
+                name: input.name,
+                type: input.type,
+                placeholder: input.placeholder,
+                options: options.map((option) => {
+                    return `${option.value}`;
+                }),
+                aiAutofillId: uniqueId
+            }
+        }
 
         return {
             id: input.id,
             name: input.name,
             type: input.type,
             placeholder: input.placeholder,
-            label: (() => {
-                const label = document.querySelector(`label[for="${input.id}"]`);
-                return label ? label.innerText : null;
-            })(),
             aiAutofillId: uniqueId  // Include the custom ID for later reference
         };
     }
@@ -86,7 +96,7 @@ function fillForm(aiResult) {
     if (!Array.isArray(aiResult)) {
         return;
     }
-    
+
     // Add CSS for highlighting if not already present
     if (!document.getElementById('ai-autofill-highlight-style')) {
         const style = document.createElement('style');
@@ -101,7 +111,7 @@ function fillForm(aiResult) {
         `;
         document.head.appendChild(style);
     }
-    
+
     // Helper function to scroll to element smoothly
     const scrollToElement = (element) => {
         element.scrollIntoView({
@@ -110,9 +120,9 @@ function fillForm(aiResult) {
             inline: 'nearest'
         });
     };
-    
+
     // Helper function to fill a single input
-    const fillSingleInput = (el, index) => {
+    const fillSingleInput = (el) => {
         return new Promise((resolve) => {
             // Find the input element
             let input = document.querySelector(`[data-ai-autofill-id="${el.aiAutofillId}"]`);
@@ -126,24 +136,35 @@ function fillForm(aiResult) {
             if (!input && el.id) {
                 input = document.getElementById(el.id);
             }
-            
+
             if (!input) {
                 resolve();
                 return;
             }
-            
+
             // Scroll to the element
             scrollToElement(input);
-            
+
             // Wait a bit for scroll animation, then fill
             setTimeout(() => {
                 // Fill the input
-                input.value = el.aiAnswer;
-                input.dispatchEvent(new Event("input", { bubbles: true }));
+                if (el.type === "select-one") {
+                    // find the option with the value of el.aiAnswer
+                    const option = input.querySelector(`option[value="${el.aiAnswer}"]`);
+                    if (option) {
+                        option.selected = true;
+                    }
+                    input.dispatchEvent(new Event("change", { bubbles: true }));
+                } else {
+
+                    input.value = el.aiAnswer;
+                    input.dispatchEvent(new Event("input", { bubbles: true }));
+                }
+
 
                 // Add highlight effect
                 input.classList.add('ai-autofill-highlight');
-                
+
                 // Remove highlight after 5 seconds
                 setTimeout(() => {
                     input.classList.remove('ai-autofill-highlight');
@@ -151,7 +172,7 @@ function fillForm(aiResult) {
 
                 // Clean up the custom attribute after successful fill
                 input.removeAttribute('data-ai-autofill-id');
-                
+
                 // Wait a bit before moving to next element
                 setTimeout(() => {
                     resolve();
@@ -159,14 +180,14 @@ function fillForm(aiResult) {
             }, 300);
         });
     };
-    
+
     // Fill inputs sequentially
     const fillSequentially = async () => {
         for (let i = 0; i < aiResult.length; i++) {
             await fillSingleInput(aiResult[i], i);
         }
     };
-    
+
     // Start the sequential filling
     fillSequentially();
 }
