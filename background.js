@@ -218,6 +218,37 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         const [result] = await chrome.scripting.executeScript({
             target: { tabId: tab.id },
             func: () => {
+                const findLabelForInput = (input) => {
+                    // Method 1: Check for explicit label association via 'for' attribute
+                    if (input.id) {
+                        const label = document.querySelector(`label[for="${input.id}"]`);
+                        if (label && label.innerText.trim()) {
+                            return label.innerText.trim();
+                        }
+                    }
+                    // Method 2: Find the nearest label element before the input
+                    let current = input.previousElementSibling;
+                    while (current) {
+                        if (current.tagName === 'LABEL' && current.innerText.trim()) {
+                            return current.innerText.trim();
+                        }
+                        current = current.previousElementSibling;
+                    }
+
+                    // Method 3: If not found in siblings, search in parent container
+                    let parent = input.parentElement;
+                    while (parent && parent !== document.body) {
+                        const labelsInParent = parent.querySelectorAll('label');
+                        for (const label of labelsInParent) {
+                            if (label.innerText.trim()) {
+                                return label.innerText.trim();
+                            }
+                        }
+                        parent = parent.parentElement;
+                    }
+
+                    return null;
+                }
                 const extractInputInfo = (input) => {
                     // Add a unique custom attribute to identify this element
                     const uniqueId = `ai-autofill-${Date.now()}`;
@@ -225,9 +256,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
                     if (input.type === "select-one") {
                         // find all the options in the select
                         const options = Array.from(input.querySelectorAll("option"));
+                        const label = findLabelForInput(input);
                         return {
-                            id: input.id,
-                            name: input.name,
+                            label: [input.id, input.name, label].filter(Boolean).join(" | "),
                             type: input.type,
                             placeholder: input.placeholder,
                             options: options.map((option) => {
@@ -237,9 +268,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
                         }
                     }
 
+                    const label = findLabelForInput(input);
                     return {
-                        id: input.id,
-                        name: input.name,
+                        label: [input.id, input.name, label].filter(Boolean).join(" | "),
                         type: input.type,
                         placeholder: input.placeholder,
                         aiAutofillId: uniqueId  // Include the custom ID for later reference
