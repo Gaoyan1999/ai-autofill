@@ -39,4 +39,3 @@ pnpm build
 -  supporting the selects that are not semantic.
 -  polish UI
     add loading state when ai is processing task
- 

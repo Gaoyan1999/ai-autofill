@@ -1,14 +1,41 @@
 document.getElementById('autofillBtn').addEventListener('click', async () => {
-    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const result = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        function: autoFillForm
-    });
-    const labelElements = result[0].result;
-    // send message to background.js one by one
-    // Process labelElements serially, waiting for each to finish before starting the next
-    async function processSerially() {
+    const autofillBtn = document.getElementById('autofillBtn');
+    
+    // Prevent multiple clicks by adding loading state
+    if (autofillBtn.classList.contains('loading')) {
+        return;
+    }
+    
+    // Add loading state
+    autofillBtn.classList.add('loading');
+    autofillBtn.disabled = true;
+    
+    try {
+        let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        const result = await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            function: autoFillForm
+        });
+        const labelElements = result[0].result;
+        // send message to background.js one by one
+        // Process labelElements serially, waiting for each to finish before starting the next
+        async function processSerially() {
+            const progressContainer = document.getElementById('progressContainer');
+            const progressText = document.getElementById('progressText');
+            const progressFill = document.getElementById('progressFill');
+            const totalFields = labelElements.length;
+            
+            // Show progress container
+            progressContainer.classList.remove('hidden');
+        
         for (let i = 0; i < labelElements.length; i++) {
+            // Update progress
+            const currentProgress = i + 1;
+            const percentage = (currentProgress / totalFields) * 100;
+            
+            progressText.textContent = `Filling ${currentProgress}/${totalFields}`;
+            progressFill.style.width = `${percentage}%`;
+            
             const data = await new Promise((resolve) => {
                 chrome.runtime.sendMessage({ type: "autoFillForm", data: [labelElements[i]] }, (response) => {
                     resolve(response);
@@ -23,8 +50,29 @@ document.getElementById('autofillBtn').addEventListener('click', async () => {
                 args: [data.values]
             });
         }
+        
+        // Show completion
+        progressText.textContent = 'Completed!';
+        progressContainer.classList.add('completed');
+        
+        // Auto-hide after 3 seconds
+        setTimeout(() => {
+            progressContainer.classList.add('hidden');
+            progressContainer.classList.remove('completed');
+            progressFill.style.width = '0%';
+            
+            // Remove loading state
+            autofillBtn.classList.remove('loading');
+            autofillBtn.disabled = false;
+        }, 3000);
     }
     processSerially();
+    } catch (error) {
+        console.error('Error during autofill:', error);
+        // Remove loading state on error
+        autofillBtn.classList.remove('loading');
+        autofillBtn.disabled = false;
+    }
 });
 
 document.getElementById('openOptions').addEventListener('click', () => {
