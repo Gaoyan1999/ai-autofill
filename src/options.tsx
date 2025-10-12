@@ -6,10 +6,12 @@ import { InfoList } from "./InfoList";
 import { isEmpty } from "lodash";
 import { Button, IconButton } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import { PdfProcessingDialog } from "./PdfProcessingDialog";
 import { Attachment } from "./types";
 import BackspaceIcon from "@mui/icons-material/Backspace";
+import UploadIcon from "@mui/icons-material/Upload";
+import Fingerprint from "@mui/icons-material/Fingerprint";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 interface InfoData {
   label: string;
@@ -131,21 +133,26 @@ const Options: React.FC = () => {
   return (
     <div className="h-full">
       {/* header */}
-      <div className="bg-black text-white py-6 px-8 rounded-b-lg mb-2 shadow-lg border-gray-300 flex justify-between items-center">
+      
+      <div
+        className="text-white py-6 px-8 rounded-b-lg mb-2 shadow-lg border-gray-300 flex justify-between items-center"
+        style={{ background: "linear-gradient(115deg, #000000, #444444)" }}
+      >
         <h1 className="text-3xl font-bold">AI-autofill</h1>
-        <Button
+        <IconButton
+          aria-label="upload"
+          size="large"
           onClick={() => setPdfDialogOpen(true)}
-          variant="contained"
-          startIcon={<PictureAsPdfIcon />}
           sx={{
-            backgroundColor: "#1976d2",
+            color: "#fff",
             "&:hover": {
-              backgroundColor: "#1565c0",
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
+              color: "#fff",
             },
           }}
         >
-          Process PDF
-        </Button>
+          <UploadIcon />
+        </IconButton>
       </div>
       <PdfProcessingDialog
         open={pdfDialogOpen}
