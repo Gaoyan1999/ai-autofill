@@ -1,7 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { viteStaticCopy } from "vite-plugin-static-copy";
-import { watch } from "chokidar";
 import path from "path";
 
 // Custom plugin to watch copied files
@@ -35,6 +34,7 @@ export default defineConfig({
                 { src: "background.js", dest: "." },
                 { src: "popup.html", dest: "." },
                 { src: "popup.js", dest: "." },
+                { src: "icons/*", dest: "icons" },
             ]
         })
     ],
