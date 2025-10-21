@@ -130,6 +130,27 @@ const Options: React.FC = () => {
     setPersonalDataSet({ ...personalDataSet, sections: newSections });
   };
 
+  const handleAddGroup = () => {
+    const newGroupName = prompt("Enter new group name:");
+    if (newGroupName && newGroupName.trim()) {
+      const newSections = [
+        ...personalDataSet.sections,
+        {
+          category: newGroupName.trim(),
+          items: [{ label: "", value: "" }],
+        },
+      ];
+      setPersonalDataSet({ ...personalDataSet, sections: newSections });
+    }
+  };
+
+  const handleDeleteGroup = (index: number) => {
+    if (confirm("Are you sure you want to delete this group?")) {
+      const newSections = personalDataSet.sections.filter((_, i) => i !== index);
+      setPersonalDataSet({ ...personalDataSet, sections: newSections });
+    }
+  };
+
   return (
     <div className="h-full">
       {/* header */}
@@ -163,7 +184,14 @@ const Options: React.FC = () => {
       {/* sections */}
       <div className="mx-4">
         {personalDataSet.sections.map((section, index) => (
-          <CollapseSection key={index} title={section.category}>
+          <CollapseSection 
+            key={index} 
+            title={section.category}
+            onAdd={handleAddGroup}
+            onDelete={() => handleDeleteGroup(index)}
+            showAddButton={true}
+            showDeleteButton={true}
+          >
             <InfoList
               onChange={(items) => handleSectionChange(index, items)}
               items={section.items}
