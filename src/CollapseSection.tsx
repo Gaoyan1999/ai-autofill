@@ -27,17 +27,27 @@ export function CollapseSection({
 
   return (
     <div>
-      <div className="flex items-center justify-between py-2">
+      <div className="flex items-center justify-between px-4 py-3 bg-gray-800 border-b border-gray-700">
         <div className="flex items-center">
-          <IconButton onClick={() => setOpen(!open)}>
+          <IconButton 
+            onClick={() => setOpen(!open)}
+            sx={{
+              color: "#ffffff",
+              "&:hover": {
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                color: "#ffffff",
+              },
+              transition: "all 0.2s ease",
+            }}
+          >
             <ExpandMoreIcon
               style={{
                 transform: open ? "rotate(0deg)" : "rotate(-90deg)",
-                transition: "0.3s",
+                transition: "transform 0.3s ease",
               }}
             />
           </IconButton>
-          <span className="text-lg font-semibold ml-1">{title}</span>
+          <span className="text-lg font-semibold text-white ml-1">{title}</span>
         </div>
         <div className="flex items-center gap-1">
           {showAddButton && onAdd && (
@@ -45,25 +55,38 @@ export function CollapseSection({
               onClick={onAdd}
               size="small"
               sx={{
-                color: "#000",
+                color: "#9ca3af",
                 "&:hover": {
-                  backgroundColor: "#f0f0f0",
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  color: "#ffffff",
                 },
+                transition: "all 0.2s ease",
               }}
             >
-              <AddIcon />
+              <AddIcon fontSize="small" />
             </IconButton>
           )}
           {showDeleteButton && onDelete && (
-            <IconButton onClick={onDelete} size="small">
-              <DeleteIcon />
+            <IconButton 
+              onClick={onDelete} 
+              size="small"
+              sx={{
+                color: "#9ca3af",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  color: "#ffffff",
+                },
+                transition: "all 0.2s ease",
+              }}
+            >
+              <DeleteIcon fontSize="small" />
             </IconButton>
           )}
         </div>
       </div>
 
       <Collapse in={open}>
-        <Box sx={{ p: 2, mt: 1 }}>{children}</Box>
+        <Box sx={{ p: 3, backgroundColor: "#1f2937" }}>{children}</Box>
       </Collapse>
     </div>
   );

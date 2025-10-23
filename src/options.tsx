@@ -152,28 +152,39 @@ const Options: React.FC = () => {
   };
 
   return (
-    <div className="h-full">
+    <div className="h-full bg-gradient-to-br from-gray-900 to-black min-h-screen">
       {/* header */}
-      
-      <div
-        className="text-white py-6 px-8 rounded-b-lg mb-2 shadow-lg border-gray-300 flex justify-between items-center"
-        style={{ background: "linear-gradient(115deg, #000000, #444444)" }}
-      >
-        <h1 className="text-3xl font-bold">AI-autofill</h1>
-        <IconButton
-          aria-label="upload"
-          size="large"
-          onClick={() => setPdfDialogOpen(true)}
-          sx={{
-            color: "#fff",
-            "&:hover": {
+      <div className="bg-black shadow-lg border-b border-gray-800">
+        <div className="px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-black to-gray-800 rounded-xl flex items-center justify-center border border-gray-700">
+              <span className="text-white font-bold text-lg">AI</span>
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-white">AI Autofill</h1>
+              <p className="text-sm text-gray-400">Smart form filling assistant</p>
+            </div>
+          </div>
+          <IconButton
+            aria-label="upload"
+            size="large"
+            onClick={() => setPdfDialogOpen(true)}
+            sx={{
               backgroundColor: "rgba(255, 255, 255, 0.1)",
-              color: "#fff",
-            },
-          }}
-        >
-          <UploadIcon />
-        </IconButton>
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              color: "#ffffff",
+              "&:hover": {
+                backgroundColor: "rgba(255, 255, 255, 0.2)",
+                borderColor: "rgba(255, 255, 255, 0.3)",
+                transform: "translateY(-1px)",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+              },
+              transition: "all 0.2s ease",
+            }}
+          >
+            <UploadIcon />
+          </IconButton>
+        </div>
       </div>
       <PdfProcessingDialog
         open={pdfDialogOpen}
@@ -182,67 +193,104 @@ const Options: React.FC = () => {
       />
 
       {/* sections */}
-      <div className="mx-4">
+      <div className="px-6 py-4 space-y-4">
         {personalDataSet.sections.map((section, index) => (
-          <CollapseSection 
-            key={index} 
-            title={section.category}
-            onAdd={handleAddGroup}
-            onDelete={() => handleDeleteGroup(index)}
-            showAddButton={true}
-            showDeleteButton={true}
-          >
-            <InfoList
-              onChange={(items) => handleSectionChange(index, items)}
-              items={section.items}
-            />
-            <Button
-              onClick={() => handleAddItem(index)}
-              variant="outlined"
-              className="flex items-center gap-2"
-              sx={{
-                mt: 1,
-                color: "#000",
-                borderColor: "#000",
-                backgroundColor: "#fff",
-                "&:hover": {
-                  backgroundColor: "#000",
-                  color: "#fff",
-                  borderColor: "#000",
-                },
-                border: "1.5px solid #000",
-              }}
+          <div key={index} className="bg-gray-900 rounded-xl shadow-lg border border-gray-800 overflow-hidden">
+            <CollapseSection 
+              title={section.category}
+              onAdd={handleAddGroup}
+              onDelete={() => handleDeleteGroup(index)}
+              showAddButton={true}
+              showDeleteButton={true}
             >
-              <span>ADD MORE</span>
-              <AddIcon />
-            </Button>
-          </CollapseSection>
+              <div className="px-2">
+                <InfoList
+                  onChange={(items) => handleSectionChange(index, items)}
+                  items={section.items}
+                />
+                <Button
+                  onClick={() => handleAddItem(index)}
+                  variant="outlined"
+                  className="flex items-center gap-2 mt-4 w-full"
+                  sx={{
+                    color: "#ffffff",
+                    borderColor: "rgba(255, 255, 255, 0.2)",
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                    borderRadius: "12px",
+                    py: 1.5,
+                    textTransform: "none",
+                    fontWeight: 500,
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.2)",
+                      borderColor: "rgba(255, 255, 255, 0.3)",
+                      transform: "translateY(-1px)",
+                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+                    },
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  <AddIcon fontSize="small" />
+                  <span>Add More Items</span>
+                </Button>
+              </div>
+            </CollapseSection>
+          </div>
         ))}
       </div>
       {/* attachments */}
-      <div className="mx-4">
-        <CollapseSection title="Attachments">
-          {personalDataSet.attachments?.map((attachment, index) => (
-            <div key={index} className="flex items-center justify-between">
-              <div className="text-xl">{attachment.name}</div>
-              <IconButton
-                aria-label="delete"
-                size="small"
-                onClick={() => {
-                  const newAttachments = personalDataSet.attachments?.filter(
-                    (_, i) => i !== index
-                  );
-                  setPersonalDataSet({
-                    ...personalDataSet,
-                    attachments: newAttachments || [],
-                  });
-                }}
-              >
-                <BackspaceIcon />
-              </IconButton>
+      <div className="px-6 py-4">
+        <div className="bg-gray-900 rounded-xl shadow-lg border border-gray-800 overflow-hidden">
+          <CollapseSection title="Attachments">
+            <div className="px-2">
+              {personalDataSet.attachments?.length ? (
+                personalDataSet.attachments.map((attachment, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg mb-2 last:mb-0">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center border border-gray-600">
+                        <span className="text-white text-sm font-medium">PDF</span>
+                      </div>
+                      <div>
+                        <div className="font-medium text-white text-sm">{attachment.name}</div>
+                        <div className="text-xs text-gray-400">
+                          {new Date(attachment.uploadedAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                    <IconButton
+                      aria-label="delete"
+                      size="small"
+                      onClick={() => {
+                        const newAttachments = personalDataSet.attachments?.filter(
+                          (_, i) => i !== index
+                        );
+                        setPersonalDataSet({
+                          ...personalDataSet,
+                          attachments: newAttachments || [],
+                        });
+                      }}
+                      sx={{
+                        color: "#9ca3af",
+                        "&:hover": {
+                          backgroundColor: "rgba(255, 255, 255, 0.1)",
+                          color: "#ffffff",
+                        },
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      <BackspaceIcon fontSize="small" />
+                    </IconButton>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-400">
+                  <UploadIcon sx={{ fontSize: 48, color: "#6b7280", mb: 2 }} />
+                  <p className="text-sm">No attachments yet</p>
+                  <p className="text-xs text-gray-500">Upload PDF files to get started</p>
+                </div>
+              )}
             </div>
-          ))}
-        </CollapseSection>
+          </CollapseSection>
+        </div>
       </div>
     </div>
   );
