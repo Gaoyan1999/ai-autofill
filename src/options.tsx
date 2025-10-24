@@ -152,9 +152,9 @@ const Options: React.FC = () => {
   };
 
   return (
-    <div className="h-full bg-gradient-to-br from-gray-900 to-black min-h-screen">
-      {/* header */}
-      <div className="bg-black shadow-lg border-b border-gray-800">
+    <div className="h-screen bg-gradient-to-br from-gray-900 to-black flex flex-col overflow-hidden">
+      {/* header - fixed */}
+      <div className="bg-black shadow-lg border-b border-gray-800 flex-shrink-0 sticky top-0 z-10">
         <div className="px-6 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-black to-gray-800 rounded-xl flex items-center justify-center border border-gray-700">
@@ -192,15 +192,15 @@ const Options: React.FC = () => {
         onClose={handleClosePdfDialog}
       />
 
-      {/* sections */}
-      <div className="px-6 py-4 space-y-4">
+      {/* scrollable content */}
+      <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-900 to-black">
+        {/* sections */}
+        <div className="px-6 py-4 space-y-4">
         {personalDataSet.sections.map((section, index) => (
           <div key={index} className="bg-gray-900 rounded-xl shadow-lg border border-gray-800 overflow-hidden">
             <CollapseSection 
               title={section.category}
-              onAdd={handleAddGroup}
               onDelete={() => handleDeleteGroup(index)}
-              showAddButton={true}
               showDeleteButton={true}
             >
               <div className="px-2">
@@ -236,6 +236,34 @@ const Options: React.FC = () => {
             </CollapseSection>
           </div>
         ))}
+        
+        {/* Add New Group Button */}
+        <div className="px-6 py-4">
+          <Button
+            onClick={handleAddGroup}
+            variant="outlined"
+            className="flex items-center gap-2 w-full"
+            sx={{
+              color: "#ffffff",
+              borderColor: "rgba(255, 255, 255, 0.2)",
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
+              borderRadius: "12px",
+              py: 1.5,
+              textTransform: "none",
+              fontWeight: 500,
+              "&:hover": {
+                backgroundColor: "rgba(255, 255, 255, 0.2)",
+                borderColor: "rgba(255, 255, 255, 0.3)",
+                transform: "translateY(-1px)",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+              },
+              transition: "all 0.2s ease",
+            }}
+          >
+            <AddIcon fontSize="small" />
+            <span>Add New Group</span>
+          </Button>
+        </div>
       </div>
       {/* attachments */}
       <div className="px-6 py-4">
@@ -291,6 +319,7 @@ const Options: React.FC = () => {
             </div>
           </CollapseSection>
         </div>
+      </div>
       </div>
     </div>
   );
