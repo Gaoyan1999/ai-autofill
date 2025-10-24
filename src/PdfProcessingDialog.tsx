@@ -130,10 +130,6 @@ export const PdfProcessingDialog: React.FC<PdfProcessingDialogProps> = ({
               transition: "all 0.2s ease-in-out",
               position: "relative",
             }}
-            onClick={() => {
-              const input = document.getElementById('pdf-file-input') as HTMLInputElement;
-              input?.click();
-            }}
           >
             <input
               id="pdf-file-input"
@@ -150,10 +146,7 @@ export const PdfProcessingDialog: React.FC<PdfProcessingDialogProps> = ({
                 left: 0,
               }}
             />
-            <Typography
-              variant="body2"
-              sx={{ color: "#6b7280", mt: 1 }}
-            >
+            <Typography variant="body2" sx={{ color: "#6b7280", mt: 1 }}>
               Click & Upload a PDF file to make the autofiller know you better!
             </Typography>
           </Paper>
